@@ -1,0 +1,99 @@
+name: Autograding Tests
+
+on:
+  push:
+  repository_dispatch:
+  workflow_dispatch:
+
+permissions:
+  checks: write
+  actions: read
+  contents: read
+
+jobs:
+  run-autograding-tests:
+    runs-on: ubuntu-latest
+    if: github.actor != 'github-classroom[bot]'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+
+      - name: Constructor
+        id: constructor
+        uses: classroom-resources/autograding-command-grader@v1
+        with:
+          test-name: Constructor
+          setup-command: ""
+          command: mvn -q -Dtest=ConstructorTest test
+          timeout: 10
+          max-score: 1.5
+
+      - name: Autenticacion Correcta
+        id: autenticacion-correcta
+        uses: classroom-resources/autograding-command-grader@v1
+        with:
+          test-name: Autenticacion Correcta
+          setup-command: ""
+          command: mvn -q -Dtest=AutenticacionCorrectaTest test
+          timeout: 10
+          max-score: 1.5
+
+      - name: Bloqueo
+        id: bloqueo
+        uses: classroom-resources/autograding-command-grader@v1
+        with:
+          test-name: Bloqueo
+          setup-command: ""
+          command: mvn -q -Dtest=BloqueoTest test
+          timeout: 10
+          max-score: 2
+
+      - name: Reiniciar Acceso
+        id: reiniciar-acceso
+        uses: classroom-resources/autograding-command-grader@v1
+        with:
+          test-name: Reiniciar Acceso
+          setup-command: ""
+          command: mvn -q -Dtest=ReiniciarAccesoTest test
+          timeout: 10
+          max-score: 1.5
+
+      - name: Validar Password Segura
+        id: validar-password
+        uses: classroom-resources/autograding-command-grader@v1
+        with:
+          test-name: Validar Password Segura
+          setup-command: ""
+          command: mvn -q -Dtest=ValidarPasswordSeguraTest test
+          timeout: 10
+          max-score: 1.5
+
+      - name: Cambiar Password
+        id: cambiar-password
+        uses: classroom-resources/autograding-command-grader@v1
+        with:
+          test-name: Cambiar Password
+          setup-command: ""
+          command: mvn -q -Dtest=CambiarPasswordTest test
+          timeout: 10
+          max-score: 2
+
+      - name: Autograding Reporter
+        uses: classroom-resources/autograding-grading-reporter@v1
+        env:
+          CONSTRUCTOR_RESULTS: "${{ steps.constructor.outputs.result }}"
+          AUTENTICACION-CORRECTA_RESULTS: "${{ steps.autenticacion-correcta.outputs.result }}"
+          BLOQUEO_RESULTS: "${{ steps.bloqueo.outputs.result }}"
+          REINICIAR-ACCESO_RESULTS: "${{ steps.reiniciar-acceso.outputs.result }}"
+          VALIDAR-PASSWORD_RESULTS: "${{ steps.validar-password.outputs.result }}"
+          CAMBIAR-PASSWORD_RESULTS: "${{ steps.cambiar-password.outputs.result }}"
+        with:
+          runners: constructor,autenticacion-correcta,bloqueo,reiniciar-acceso,validar-password,cambiar-password
